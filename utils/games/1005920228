@@ -1,0 +1,22 @@
+# Blue Game - Tue Apr 16 20:41:55 2002
+#
+# SEED 
+1005920228
+# PLAYMODE 
+0
+# INITIAL BOARD
+ AS  9C  KS  KC  6C  JS  7D  9D  2D  9S  6H  **  9H  6S 
+ AH  8C  3H  3D  4C  8S  7S 10S 10H  QS  5H  3S  JC  QC 
+ AC  4S  4D  KH  **  **  JD 10C  QH  QD  8H  7H  4H  JH 
+ AD 10D  5C  6D  KD  2C  5S  7C  2H  **  5D  2S  3C  8D 
+# CURRENT BOARD
+ AD  9C  KS  KC  6C  JS  7D  9D  2D  9S  6H  **  9H  6S 
+ AS  8C  3H  3D  4C  8S  7S 10S 10H  QS  5H  3S  JC  QC 
+ AH  4S  4D  KH  **  **  JD 10C  QH  QD  8H  7H  4H  JH 
+ AC 10D  5C  6D  KD  2C  5S  7C  2H  **  5D  2S  3C  8D 
+# STRATEGY
+ AD  2D  3D  KC  **  6D  7D  8D  9D  9S 10S  JS  QS  KS 
+ AS  2S  3S  4S  5S  6S  7S  8S  **  **  QH  KH  JC  QC 
+ AH  2H  3H  4H  5H 10D  JD  **  6H  7H  8H  9H 10H  JH 
+ AC  4D  5D  QD  KD  5C  6C  7C  8C  9C 10C  2C  3C  4C 
+# HISTORY 0 0

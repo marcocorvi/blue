@@ -1,0 +1,114 @@
+README     B L U E
+Apr. 2001
+version 1.0.2 : Mar. 2002
+                
+
+
+Blue is a card game.
+I got the idea from a test program of the ncurses library, named "blue".
+That game had one major "flaw": it was meant to demonstrate the library
+not to be interesting as a game in itself.
+So i changed a little bit of the rules and made it into what might be 
+considered an interesting game, i.e., a game you have to think to get 
+to the solution.
+
+
+
+R U L E S 
+
+The cards are laid out in four rows of 13 cards each.
+The aces are moved to the left of the rows; one ace per row,
+doesn't matter which.
+In fact before you begin to move the cards around you can switch 
+the ace positions among themselves.
+
+The purpose of the game is to put all the cards for each suit 
+in a row starting from the ace, in ascending order.
+
+A card can be moved to an empty slot if one of the following two conditions is
+met:
+  - the card to the left is of the same suit and one less in value; 
+  - the card to the right is of the same suit and one more in value. 
+
+Therefore kings are no good as far as putting something to their right.
+The aces cannot be moved (excpet for switching their positions before
+moving any other card).
+
+
+
+START OF "BLUE"
+
+Type "blue" to play a game.
+Type "blue -s yourSeed" to play a game with cards shuffled with 
+      srand(yourSeed).
+Type "blue -f filename" to load a game stored in file "filename".
+
+
+
+S T R A T E G Y 
+
+Getting the game done requires a good amount of planning ahead.
+I call this "strategy".
+
+Essentially it aims at organizing the cards in runs of the same
+suit and increasing value, beginning with a card in the layout, so that 
+the runs fit all together.
+
+The game is then played by arranging the cards according to the strategy,
+and then moving them to their final positions.
+
+The interface lets you organize your strategy by drawing the runs
+over the cards of the layout. Click on the the base card and drag up to 
+the card you want to extend the run, either to the right or to the left.
+If you go too far the run is not taken in.
+If you (partly) overwrite an existing run it is (partly) cancelled.
+You can erase a card mark in a run by double clicking on the card.
+A single click makes a line above the card.
+You can start a run from an ace.
+
+The runs are coloured differently according to the suit.
+The suit colors are shown on the top.
+
+Essentially by doing the strategy you organize the way you are going to
+play, ie, to move the cards.
+
+
+
+P L A Y I N G  ON THE XWINDOW
+
+Playing is just moving the cards according to the rules of the game.
+You move a card by drag-n-drop: press a mouse button on the card
+you want to move and release it on the empty place where you want to
+move it. 
+While in "Play" mode, a double-click moves the card to the only
+allowed place, or just indicates two positions in case there are 
+two allowed places.
+(Two successive clicks are considered as a double click if the 
+ButtonRelease of the second click is within 400 milliseconds 
+of the first ButtonRelease.)
+
+
+
+M E N U   B U T T O N S 
+
+You can toggle at any time between "Strategy" mode and "Play" mode
+by pressing the button on the menu bar on the top.  
+But you cannot swap aces once you have made a card move.
+
+The history buttons "Backward" and "Forward" let you go back and forth
+in the moves.
+
+"Save" will save the current game: the original layout, history of
+card moves, and current status of the window.
+
+Finally, "New game" will start a fresh new game, and "Restart" will
+restart the current game (you will not lose your strategy).
+
+
+
+Hope you like and enjoy it.
+
+marco <marco_corvi@geocities.com>
+& Kyungmi<kyungmi_lim@geocities.yahoo.com>
+
+

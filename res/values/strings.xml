@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Blue</string>
+
+    <string name="menu_play">PLAY</string>
+    <string name="menu_strategy">PLAN</string>
+    <string name="menu_help">Help</string>
+
+    <string name="btn_shuffle">Shuffle</string>
+    <string name="btn_next_game">Next game</string>
+    <string name="btn_clear">Clear</string>
+    <string name="btn_restart">Restart</string>
+    <string name="btn_reset">New</string>
+    <string name="btn_help">Help</string>
+    <string name="btn_exit">Exit</string>
+    <string name="btn_play">Play</string>
+    <string name="btn_file">File</string>
+    <string name="btn_save">Save</string>
+    <string name="btn_load">Load</string>
+    <string name="btn_delete">Delete</string>
+    <string name="btn_export">Export</string>
+    <string name="btn_strategy">Plan</string>
+    <string name="btn_backward">Backward</string>
+    <string name="btn_forward">Forward</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="btn_ok">OK</string>
+
+    <string name="ask_restart">Restart the game?</string>
+    <string name="ask_clear">Clear play strategy?</string>
+    <string name="ask_reset">Reset with a new game?</string>
+    <string name="ask_next_game">Go to the next game?</string>
+
+    <string name="game_">Game: %1$s</string>
+    <string name="game_list">Games</string>
+    <string name="game_over">Game over</string>
+    <string name="congrats">Congratulations!</string>
+
+
+<string name="help">
+Blue is a a card game, inspired after the game "Blue Moon" created by
+Tim Lister (see www.catb.org/~esr/bluemoon/bluemoon.html).
+BR
+The purpose of the game is to order the 52 cards of the deck.
+BR
+A card can be moved to an empty place provided one of the following two
+conditions holds:
+[1] there is a card in the
+place to the left and this card has the same suit of the card that is 
+being moved and value exactly one less than it; 
+[2] there is a card in the
+place to the right and this card has the same suit of the card that is 
+being moved and value exactly one more than it.
+BR
+Before you start moving the cards you can plan a playing strategy: the
+program starts in PLAN mode. In this mode you can rearrange the aces in the first
+column, by dragging them up and down to swap their positions.
+You can also mark runs of cards with the same
+suit. Start with a card of that suit and drag it to the left or to the
+right.
+BR
+Once you are happy with the positions of the aces and the suit runs, turn
+the program into PLAY mode (with the first menu), and move the cards.
+BR
+The program keeps tracks of the moves and, while in PLAY mode, you can go 
+back and forth with a up or down drag gesture on the column of aces.
+You can go backward also with the BACK button.
+BR
+You can go back to PLAN mode and change your strategy, even if you have already 
+moved some cards. However, you can swap aces only if you have not moved
+any card.
+BR
+The game is over when the cards form four ordered sequences, one for each
+suit.
+BR
+BR
+Games are stored in the internal storage.
+From the "File" dialog you can store the current game, load a stored game, and 
+copy a game to the sdcard. Select the game tapping on its name (the long number).
+You can also import a game from the sdcard to the internal storage.
+BR
+The app comes with a set of 36 pre-installed games.
+Each of these games has a solution.
+
+</string>
+
+</resources>

@@ -1,0 +1,24 @@
+# Blue Game - Sun Feb 14 07:48:44 2010
+#
+# SEED 
+1266130043
+# PLAYMODE 
+0
+# INITIAL BOARD
+ AD  9D  JC  8D  6H  3D  3S  **  QC  5D  2H  3C  QS 10C 
+ AH  KD  QH  7H  7C 10H  2S  4H  6S  8S  **  QD  7S  6C 
+ AC  3H  JH  KC  8C  5C  **  4C  5H  8H  9S  JS 10D  7D 
+ AS  9H  4D 10S  4S  6D  KH  2D  JD  5S  2C  **  9C  KS 
+# CURRENT BOARD
+ AD  9D  JC  8D  6H  3D  3S  **  QC  5D  2H  3C  QS 10C 
+ AH  KD  QH  7H  7C 10H  2S  4H  6S  8S  **  QD  7S  6C 
+ AC  3H  JH  KC  8C  5C  **  4C  5H  8H  9S  JS 10D  7D 
+ AS  9H  4D 10S  4S  6D  KH  2D  JD  5S  2C  **  9C  KS 
+# STRATEGY
+ **  **  **  **  **  **  **  **  **  **  **  **  QS  KS 
+ **  **  **  **  **  **  **  **  **  **  **  **  **  ** 
+ **  **  **  **  **  **  **  **  **  **  **  **  **  ** 
+ **  **  **  **  **  **  **  **  **  **  **  **  **  ** 
+# HISTORY 0 -1
+11 34 0
+38 24 0
