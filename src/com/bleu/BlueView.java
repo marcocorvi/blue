@@ -1,6 +1,6 @@
 /* @file BlueView.java
  *
- * This class is adapted from the "snake" sample (with very few changes)
+ * This class is adapted from the "snake" sample with a few changes
  *
  * Copyright (C) 2007 The Android Open Source Project
  *

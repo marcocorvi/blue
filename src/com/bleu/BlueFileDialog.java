@@ -1,5 +1,13 @@
 /** BlueFileDialog.java
  *
+ * @author marco corvi
+ * @date nov 2013
+ *
+ * @brief Blue file dialog
+ * --------------------------------------------------------
+ *  Copyright This sowftare is distributed under GPL-3.0 or later
+ *  See the file COPYING.
+ * --------------------------------------------------------
  */
 package com.marcocorvi.blue;
 

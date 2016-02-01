@@ -1,9 +1,9 @@
-/** @file TopoDroidApp.java
+/** BlueAapp.java
  *
  * @author marco corvi
- * @date nov 2011
+ * @date nov 2013
  *
- * @brief TopoDroid application (consts and prefs)
+ * @brief Blue app
  * --------------------------------------------------------
  *  Copyright This sowftare is distributed under GPL-3.0 or later
  *  See the file COPYING.
