@@ -130,17 +130,21 @@ public class BlueView extends SurfaceView
 
 
   // ----------------------------------------------------------------
+  final static int MODE_NONE = 0;
   final static int MODE_STRATEGY = 1;
   final static int MODE_PLAY = 2;
   final static int MODE_OVER = 3;
+  final static int MODE_MENU = 4;
   final static int MODE_DEFAULT = 1;
 
   int mMode;
+  int mSavedMode = MODE_DEFAULT;
 
   String getModeString()
   {
     return ( mMode == MODE_PLAY )? "PLAY - " + mHistoryPos + " / " + mHistory.size() 
          : ( mMode == MODE_STRATEGY )? "STRATEGY" 
+         : ( mMode == MODE_MENU )? "MENU" 
          : "GAME OVER - " + mHistoryPos;
   }
 
@@ -148,6 +152,44 @@ public class BlueView extends SurfaceView
   {
     if ( mMode == MODE_OVER ) return;
     mMode = ( mMode == MODE_PLAY )?  MODE_STRATEGY : MODE_PLAY;
+  }
+
+  final static int ACTION_NONE = 0;
+  final static int ACTION_P_S  = 1;
+  final static int ACTION_FILE = 2;
+  final static int ACTION_HOME = 3;
+  final static int ACTION_NEW  = 4;
+  final static int ACTION_HELP = 5;
+  final static int ACTION_EXIT = 6;
+  final static int ACTION_MENU = 7;
+
+  int toggleMenu( int x, int y )
+  {
+    int ret = ACTION_NONE;
+    if ( mMode != MODE_MENU ) {
+      if ( y > mYOffset+mYMenuBtn && x > mXOffset+mXMenuBtn && x < mXOffset+mXMenuBtn+mWMenuBtn ) {
+        mSavedMode = mMode;
+        mMode = MODE_MENU;
+        return ACTION_MENU;
+      }
+    } else if ( y > mYOffset+mYMenu && x > mXOffset+mXMenu && x < mXOffset + mXMenu + mWMenu) {
+      int i0 = (x - (mXOffset + mXMenu))/( mWMenu / 6 );
+      int j0 = (y - (mYOffset + mYMenu))/( mHMenu / 3 );
+      // Log.v("Bleu", "i " + i0 + " j " + j0 );
+      if ( j0 == 0 ) {
+        if ( i0 == 2 || i0 == 3 ) ret = ACTION_NEW;
+      } else if ( j0 == 1 ) {
+        if ( i0 == 1 || i0 == 2 ) ret = ACTION_HOME;
+        if ( i0 == 3 || i0 == 4 ) ret = ACTION_HELP;
+      } else if ( j0 == 2 ) {
+        if ( i0 == 0 || i0 == 1 ) ret = ACTION_FILE;
+        if ( i0 == 2 || i0 == 3 ) ret = ACTION_P_S;
+        if ( i0 == 4 || i0 == 5 ) ret = ACTION_EXIT;
+      }
+    }
+    mMode = mSavedMode;
+    mSavedMode = MODE_DEFAULT;
+    return ret;
   }
 
   // ----------------------------------------------------------------
@@ -163,6 +205,14 @@ public class BlueView extends SurfaceView
   protected static int mYGap8  = 8;
   static int mCanvasWidth  = 320;
   static int mCanvasHeight = 240;
+  static int mXMenuBtn = 0;
+  static int mYMenuBtn = 0;
+  static int mWMenuBtn = 21;
+  static int mHMenuBtn = 11;
+  static int mXMenu = 0;
+  static int mYMenu = 0;
+  static int mWMenu = 42;
+  static int mHMenu = 21;
 
   // ----------------------------------------------------------------
   // CARDS AND ICONS
@@ -226,6 +276,8 @@ public class BlueView extends SurfaceView
 
   Bitmap[] mBitmap;
   Card[] mCards;
+  Bitmap mMenuBtn;
+  Bitmap mMenu;
 
   private Bitmap loadBitmap( int id, int w, int h )
   {
@@ -252,6 +304,11 @@ public class BlueView extends SurfaceView
     for ( int i=0; i<52; ++i ) {
       mCards[i].bitmap = mBitmap[i];
     }
+  
+    Bitmap bm1 = BitmapFactory.decodeResource( mContext.getResources(), R.drawable.menu_btn );
+    mMenuBtn   = Bitmap.createScaledBitmap( bm1, mWMenuBtn, mHMenuBtn, false );
+    Bitmap bm2 = BitmapFactory.decodeResource( mContext.getResources(), R.drawable.menu );
+    mMenu      = Bitmap.createScaledBitmap( bm2, mWMenu, mHMenu, false );
   }
 
   // ---------------------------------------------------------------
@@ -259,6 +316,7 @@ public class BlueView extends SurfaceView
 
   Paint mPaintBlue;
   Paint mPaintGrey;
+  Paint mPaintMenu;
   Paint mPaint[];
   Paint mPaintText[];
 
@@ -279,6 +337,11 @@ public class BlueView extends SurfaceView
     mPaintGrey.setStrokeJoin(Paint.Join.ROUND);
     mPaintGrey.setStrokeCap(Paint.Cap.ROUND);
     mPaintGrey.setStrokeWidth( 1 );
+
+    mPaintMenu = new Paint();
+    mPaintMenu.setDither(true);
+    mPaintMenu.setColor( 0xffcccccc );
+    mPaintMenu.setStyle(Paint.Style.FILL);
 
     mPaint = new Paint[4];
     mPaintText = new Paint[4];
@@ -424,6 +487,19 @@ public class BlueView extends SurfaceView
     canvas.drawText( sym, ii, jj, mPaintText[suit] );
   }
 
+  private void drawMenu( Canvas canvas )
+  {
+    if ( mMode == MODE_MENU ) {
+      int i0 = mXOffset + mXMenu;
+      int j0 = mYOffset + mYMenu;
+      canvas.drawBitmap( mMenu, i0, j0, mPaintMenu );
+    } else {
+      int i0 = mXOffset + mXMenuBtn;
+      int j0 = mYOffset + mYMenuBtn;
+      canvas.drawBitmap( mMenuBtn, i0, j0, mPaintMenu );
+    }
+  }
+
   private void drawCard( Canvas canvas, int i, int j, int b )
   {
     int i0 = mXOffset + i * ( mXCard + mXGap );
@@ -475,6 +551,7 @@ public class BlueView extends SurfaceView
         drawCard( canvas, i, j, mBoard[j*14+i] );
       }
     }
+    drawMenu( canvas );
   }
 
   void dumpBoard( int[] board )
@@ -774,6 +851,15 @@ public class BlueView extends SurfaceView
     mYGap = (10 * hh)/240;
     mYGap2 = (2 * hh)/240;
     mYGap8 = (8 * hh)/240;
+    mXMenuBtn = (int)(6.5 * ( mXCard + mXGap ));
+    mYMenuBtn = 4 * ( mYCard + mYGap ) - mXCard/2;
+    mXMenu    = (int)(7 * ( mXCard + mXGap )) - 2 * mXCard;
+    mYMenu    = 4 * ( mYCard + mYGap ) - 2 * mXCard;
+
+    mWMenuBtn = mXCard;
+    mHMenuBtn = mXCard/2;
+    mWMenu    = 4 * mXCard;
+    mHMenu    = 2 * mXCard;
     // Log.v("Blue", "Window resize Card " + mXCard + " " + mYCard + " Gap " + mXGap + " " + mYGap );
     makePaints();
     makeBitmaps();

@@ -21,11 +21,13 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.content.DialogInterface;
 import android.content.res.Resources;
+import android.content.pm.ActivityInfo;
 import android.view.Window;
 import android.view.View;
 import android.view.View.OnKeyListener;
 import android.view.MotionEvent;
 
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import android.view.Display;
@@ -35,12 +37,14 @@ import android.media.ToneGenerator;
 
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.KeyEvent;
 
 import android.util.Log;
 import android.util.DisplayMetrics;
 
 public class BlueActivity extends Activity
                           implements View.OnTouchListener
+                          // , View.OnKeyListener
 {
   private BlueView mView = null;
   private final ToneGenerator mToneGenerator = new ToneGenerator( AudioManager.STREAM_ALARM, 50 ); // 50 = volume
@@ -63,10 +67,12 @@ public class BlueActivity extends Activity
 
     mApp = (BlueApp) getApplication();
     mApp.mActivity = this;
+    setRequestedOrientation( ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE );
 
     setContentView(R.layout.main);
 
     mView = (BlueView) findViewById( R.id.blue_view );
+    // ((LinearLayout)findViewById( R.id.blue_main ) ).setOnKeyListener(this);
 
     int width  = getResources().getDisplayMetrics().widthPixels;
     int height = getResources().getDisplayMetrics().heightPixels;
@@ -195,7 +201,7 @@ public class BlueActivity extends Activity
     } else if ( mMIreset != null && item == mMIreset ) {
       askReset();
     } else if ( item == mMIexit ) {
-      finish();
+      askExit();
     } else if ( item == mMIfile ) {
       (new BlueFileDialog( this, this, mView )).show();
     }
@@ -220,6 +226,19 @@ public class BlueActivity extends Activity
         public void onClick( DialogInterface dialog, int btn ) {
           mView.reset();
           setTheTitle();
+        }
+    } );
+  }
+
+  private void askExit()
+  {
+    // Log.v("Bleu", "ask exit");
+    new BlueAlertDialog( this, getResources(), getResources().getString( R.string.ask_exit ),
+      new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick( DialogInterface dialog, int btn ) {
+          // Log.v("Bleu", "ask exit click");
+          finish();
         }
     } );
   }
@@ -269,6 +288,36 @@ public class BlueActivity extends Activity
     }
   }
 
+  private boolean checkMenu( int x, int y )
+  {
+    int action =  mView.toggleMenu( x, y );
+    switch ( action ) {
+      case BlueView.ACTION_NONE: return false;
+      case BlueView.ACTION_P_S: 
+        mView.toggleMode();
+        setTheTitle();
+        return true;
+      case BlueView.ACTION_FILE: 
+        (new BlueFileDialog( this, this, mView )).show();
+        return true;
+      case BlueView.ACTION_HOME:
+        askRestart();
+        return true;
+      case BlueView.ACTION_NEW: 
+        askReset();
+        return true;
+      case BlueView.ACTION_HELP: 
+        (new BlueHelp( this ) ).show();
+        return true;
+      case BlueView.ACTION_EXIT:
+        askExit();
+        return true;
+      case BlueView.ACTION_MENU:
+        return true;
+    }
+    return false;
+  }
+
   @Override
   public boolean onTouch( View v, MotionEvent ev )
   { 
@@ -276,12 +325,14 @@ public class BlueActivity extends Activity
 
     int x = (int)ev.getX();
     int y = (int)ev.getY();
+    // Log.v("Bleu", "Touch " + x + " " + y );
     int action = ev.getAction() & MotionEvent.ACTION_MASK;
    
     if ( action == MotionEvent.ACTION_DOWN ) {
       row1 = mView.getRow( x, y );
       col1 = mView.getColumn( x, y );
     } else if ( action == MotionEvent.ACTION_UP ) {
+      if ( checkMenu( x, y ) ) return true;
       row2 = mView.getRow( x, y );
       col2 = mView.getColumn( x, y );
       // Log.v("Blue", "Touch from " + row1 + "," + col1 + " to " + row2 + "," + col2 );
@@ -345,23 +396,40 @@ public class BlueActivity extends Activity
     super.onStop();
   }
 
-  @Override
-  public void onBackPressed()
-  {
-    if ( mView.mMode == mView.MODE_PLAY ) {
-      mView.goBackward();
-      setTheTitle();
-    }
-  }
+  // @Override
+  // public void onBackPressed()
+  // {
+  //   // Log.v("Bleu", "BACK pressed ");
+  //   if ( mView.mMode == mView.MODE_PLAY ) {
+  //     mView.goBackward();
+  //     setTheTitle();
+  //   }
+  // }
 
-  @Override
-  public boolean onSearchRequested()
-  {
-    if ( mView.mMode == mView.MODE_PLAY ) {
-      mView.goForward();
-      setTheTitle();
-    }
-    return false; // block search
-  }
+  // @Override
+  // public boolean onSearchRequested()
+  // {
+  //   // Log.v("Bleu", "SEARCH pressed ");
+  //   if ( mView.mMode == mView.MODE_PLAY ) {
+  //     mView.goForward();
+  //     setTheTitle();
+  //   }
+  //   return false; // block search
+  // }
+
+  // @Override
+  // public boolean onKey( View v, int keycode, KeyEvent ev )
+  // {
+  //   if ( keycode == KeyEvent.KEYCODE_VOLUME_DOWN ) {
+  //     Log.v("Bleu", "VOLUNE DOWN pressed ");
+  //   } else if ( keycode == KeyEvent.KEYCODE_VOLUME_UP ) {
+  //     Log.v("Bleu", "VOLUNE DOWN pressed ");
+  //   } else if ( keycode == KeyEvent.KEYCODE_POWER ) {
+  //     Log.v("Bleu", "POWER pressed ");
+  //   } else {
+  //     return false;
+  //   }
+  //   return true;
+  // }
 
 }

@@ -29,6 +29,7 @@
     <string name="ask_clear">Clear play strategy?</string>
     <string name="ask_reset">Reset with a new game?</string>
     <string name="ask_next_game">Go to the next game?</string>
+    <string name="ask_exit">Do you want really to exit?</string>
 
     <string name="game_">Game: %1$s</string>
     <string name="game_list">Games</string>
@@ -62,17 +63,31 @@ Once you are happy with the positions of the aces and the suit runs, turn
 the program into PLAY mode (with the first menu), and move the cards.
 BR
 The program keeps tracks of the moves and, while in PLAY mode, you can go 
-back and forth with a up or down drag gesture on the column of aces.
-You can go backward also with the BACK button.
+back and forth with a up or down drag gesture on the aces column.
 BR
 You can go back to PLAN mode and change your strategy, even if you have already 
-moved some cards. However, you can swap aces only if you have not moved
-any card.
+moved some cards. However, you can swap aces only if you have not yet made any move.
 BR
-The game is over when the cards form four ordered sequences, one for each
-suit.
+The game is over when the cards form four ordered sequences, one for each suit.
 BR
 BR
+Tap MENU dot, in the middle center, to open the menu dialog.
+The six menus are:
+BR
+"Play/Strategy" switch (in the middle)
+BR
+"File" dialog
+BR
+"Restart" the play
+BR
+"New Game"
+BR
+"Help" 
+BR
+"Exit"
+BR
+BR
+
 Games are stored in the internal storage.
 From the "File" dialog you can store the current game, load a stored game, and 
 copy a game to the sdcard. Select the game tapping on its name (the long number).

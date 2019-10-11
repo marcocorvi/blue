@@ -41,7 +41,6 @@ class Card
     return -1;
   }
 
-
   Card( int k, int i, Bitmap bmap, Paint pnt )
   {
     suit   = k;

@@ -11,6 +11,8 @@
  */
 package com.marcocorvi.blue;
 
+import android.os.Build;
+
 import android.content.DialogInterface;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
@@ -24,8 +26,6 @@ class BlueAlertDialog
 
   BlueAlertDialog( Context context, Resources res, String title, DialogInterface.OnClickListener pos )
   {
-      // NEED API LEVEL 11 for custom background color
-
       AlertDialog.Builder alert_builder = new AlertDialog.Builder( context );
 
       alert_builder.setMessage( title );
@@ -40,7 +40,9 @@ class BlueAlertDialog
       alert_builder.setNegativeButton( res.getString( R.string.btn_ok ), pos );
 
       AlertDialog alert = alert_builder.create();
-      // alert.getWindow().setBackgroundDrawableResource( R.color.background );
+      if (  Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ) {
+        alert.getWindow().setBackgroundDrawableResource( R.color.background );
+      }
       alert.show();
   }
 
