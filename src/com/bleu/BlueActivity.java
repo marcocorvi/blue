@@ -18,7 +18,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import android.app.Activity;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.content.pm.ActivityInfo;
@@ -29,6 +31,7 @@ import android.view.MotionEvent;
 
 import android.widget.LinearLayout;
 import android.widget.Toast;
+import android.widget.TextView;
 
 import android.view.Display;
 import android.util.DisplayMetrics;
@@ -294,8 +297,10 @@ public class BlueActivity extends Activity
     switch ( action ) {
       case BlueView.ACTION_NONE: return false;
       case BlueView.ACTION_P_S: 
-        mView.toggleMode();
-        setTheTitle();
+        if ( mView.mMode != mView.MODE_OVER ) {
+          mView.toggleMode();
+          setTheTitle();
+        }
         return true;
       case BlueView.ACTION_FILE: 
         (new BlueFileDialog( this, this, mView )).show();
@@ -396,15 +401,57 @@ public class BlueActivity extends Activity
     super.onStop();
   }
 
-  // @Override
-  // public void onBackPressed()
-  // {
-  //   // Log.v("Bleu", "BACK pressed ");
-  //   if ( mView.mMode == mView.MODE_PLAY ) {
-  //     mView.goBackward();
-  //     setTheTitle();
-  //   }
-  // }
+  @Override
+  public synchronized void onDestroy() 
+  {
+    super.onDestroy();
+    if ( doubleBackHandler != null ) {
+      doubleBackHandler.removeCallbacks( doubleBackRunnable );
+    }
+  }
+
+  private boolean doubleBack = false;
+  private Handler doubleBackHandler = new Handler();
+  private Toast   doubleBackToast = null;
+
+  private final Runnable doubleBackRunnable = new Runnable() {
+    @Override 
+    public void run() {
+      doubleBack = false;
+      if ( doubleBackToast != null ) doubleBackToast.cancel();
+      doubleBackToast = null;
+    }
+  };
+
+  @Override
+  public void onBackPressed()
+  {
+    // askExit();
+
+    // if ( mView.mMode == mView.MODE_PLAY ) {
+    //   mView.goBackward();
+    //   setTheTitle();
+    // }
+
+    if ( doubleBack ) {
+      if ( doubleBackToast != null ) doubleBackToast.cancel();
+      doubleBackToast = null;
+      super.onBackPressed();
+      return;
+    }
+    doubleBack = true;
+    doubleBackToast = Toast.makeText( this, R.string.double_back, Toast.LENGTH_SHORT );
+    View view = doubleBackToast.getView();
+    if ( Build.VERSION.SDK_INT > Build.VERSION_CODES.O ) {
+      view.setBackgroundResource( R.drawable.toast_bg );
+    } else if ( Build.VERSION.SDK_INT < Build.VERSION_CODES.M ) {
+      view.setBackgroundColor( 0xff0033cc );
+    }
+    TextView tv = (TextView)view.findViewById( android.R.id.message );
+    tv.setTextColor( 0xffffffff );
+    doubleBackToast.show();
+    doubleBackHandler.postDelayed( doubleBackRunnable, 1000 );
+  }
 
   // @Override
   // public boolean onSearchRequested()

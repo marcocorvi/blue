@@ -138,7 +138,7 @@ public class BlueView extends SurfaceView
   final static int MODE_DEFAULT = 1;
 
   int mMode;
-  int mSavedMode = MODE_DEFAULT;
+  int mSavedMode = MODE_NONE;
 
   String getModeString()
   {
@@ -152,6 +152,7 @@ public class BlueView extends SurfaceView
   {
     if ( mMode == MODE_OVER ) return;
     mMode = ( mMode == MODE_PLAY )?  MODE_STRATEGY : MODE_PLAY;
+    // Log.v("Bleu", "toggle mode MODE " + mMode + " savedMode " + mSavedMode );
   }
 
   final static int ACTION_NONE = 0;
@@ -172,6 +173,7 @@ public class BlueView extends SurfaceView
         mMode = MODE_MENU;
         return ACTION_MENU;
       }
+      return ACTION_NONE;
     } else if ( y > mYOffset+mYMenu && x > mXOffset+mXMenu && x < mXOffset + mXMenu + mWMenu) {
       int i0 = (x - (mXOffset + mXMenu))/( mWMenu / 6 );
       int j0 = (y - (mYOffset + mYMenu))/( mHMenu / 3 );
@@ -188,7 +190,8 @@ public class BlueView extends SurfaceView
       }
     }
     mMode = mSavedMode;
-    mSavedMode = MODE_DEFAULT;
+    mSavedMode = MODE_NONE;
+    // Log.v("Bleu", "toggle menu MODE " + mMode + " savedMode " + mSavedMode );
     return ret;
   }
 

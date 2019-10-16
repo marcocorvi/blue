@@ -30,6 +30,7 @@
     <string name="ask_reset">Reset with a new game?</string>
     <string name="ask_next_game">Go to the next game?</string>
     <string name="ask_exit">Do you want really to exit?</string>
+    <string name="double_back">Click BACK again to exit</string>
 
     <string name="game_">Game: %1$s</string>
     <string name="game_list">Games</string>
