@@ -13,6 +13,7 @@ package com.marcocorvi.blue;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.FileNotFoundException;
@@ -37,6 +38,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.ListView;
 import android.widget.ArrayAdapter;
+import android.widget.Toast;
 import android.view.ViewGroup.LayoutParams;
 
 import android.util.Log;
@@ -45,7 +47,10 @@ class BlueFileDialog extends Dialog
                      implements OnClickListener
                      , OnItemClickListener
 {
-  static final String BLUE_DIR = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Android/data/com.bleu";
+  static final String SDCARD = Environment.getExternalStorageDirectory().getAbsolutePath();
+  static final String BLUE_DIR = SDCARD + "/Android/data/com.marcocorvi.blue/Files";
+  static String blue_dir = BLUE_DIR;
+  static File mBlueDir;
 
   private Context  mContext;
   private BlueView mView;
@@ -71,6 +76,8 @@ class BlueFileDialog extends Dialog
     mCanSave = true;
     mFiles = new ArrayAdapter<String>( mContext, R.layout.message );
     mFilesExt = new ArrayAdapter<String>( mContext, R.layout.message_ext );
+    mBlueDir = mContext.getExternalFilesDir( null );
+    blue_dir = mBlueDir.getAbsolutePath();
   }
 
   @Override
@@ -136,27 +143,36 @@ class BlueFileDialog extends Dialog
     // } catch ( IOException e ) { }
     // try {
       String[] files = mContext.fileList(  );
-      // Log.v("Blue", "internal files " + files.length );
+      // Log.v( BlueApp.TAG, "internal files " + files.length );
       for ( k=0; k < files.length; ++k ) {
         mFiles.add( files[k] );
       }
     // } catch ( IOException e ) { }
 
+    // check external files only in default BLUE_DIR
     mFilesExt.clear();
-    File dir = new File( BLUE_DIR );
-    if ( ! dir.exists() ) {
-      // dir.mkdirs();
-    } else {
-      files = dir.list();
-      // Log.v("Blue", "external files " + files.length );
-      for ( k=0; k < files.length; ++k ) {
-        File file = new File( dir, files[k] );
-        if ( ! file.isDirectory() ) {
-          mFilesExt.add( files[k] );
+    // File dir = new File( BLUE_DIR );
+    // File dir = new File( blue_dir );
+    // if ( ! dir.exists() ) {
+    //   if ( ! dir.mkdirs() ) {
+    //     // dir = new File( SDCARD );
+    //   }
+    // } 
+    if ( mBlueDir.exists() ) {
+      files = mBlueDir.list();
+      if ( files != null ) {
+        // Log.v( BlueApp.TAG, "external files " + files.length );
+        for ( k=0; k < files.length; ++k ) {
+          File file = new File( mBlueDir, files[k] );
+          if ( ! file.isDirectory() ) {
+            mFilesExt.add( files[k] );
+          }
         }
       }
+    } else {
+      Log.v( BlueApp.TAG, "failed dir " + blue_dir );
+      Toast.makeText( mContext, R.string.fail_blue_dir, Toast.LENGTH_LONG ).show();
     }
-    
   }
 
   @Override
@@ -181,7 +197,7 @@ class BlueFileDialog extends Dialog
         FileInputStream fis = null;
         try { 
           fis = mContext.openFileInput( mFilename );
-          BlueStore.loadGame( fis, mView, mFilename );
+          BlueStore.loadGame( fis, mView, mFilename, false );
           mParent.setTheTitle();
         } catch ( FileNotFoundException e ) {
           // todo
@@ -190,7 +206,7 @@ class BlueFileDialog extends Dialog
         }
         // dismiss dialog
       } else if ( b == mBtnExport ) {
-        exportFile( mFilename );
+        exportGame( mContext, mView, mFilename );
         return; // do not dismiss dialog
       } else if ( b == mBtnDelete ) {
         mContext.deleteFile( mFilename );
@@ -202,55 +218,108 @@ class BlueFileDialog extends Dialog
     dismiss();
   }
 
-  private void exportFile( String filename )
+  static boolean checkBlueDir( Context context )
   {
-    File dir = new File( BLUE_DIR );
-    if ( ! dir.exists() ) dir.mkdirs();
-
-    FileInputStream fis = null;
-    FileOutputStream fos = null;
-    try { 
-      fis = mContext.openFileInput( filename );
-      byte[] buffer = BlueStore.readGame( fis );
-      if ( buffer != null ) {
-        // Log.v("Blue", "buffer length " + buffer.length );
-        File out = new File( BLUE_DIR + "/" + filename );
-        fos = new FileOutputStream( out );
-        BlueStore.writeGame( fos, buffer );
-        updateList();
-      } else {
-        Log.v("Blue", "null game buffer");
-      }
-    } catch ( FileNotFoundException e ) {
-      // todo
-    } finally {
-      if ( fis != null ) try { fis.close(); } catch ( IOException e ) { }
-      if ( fos != null ) try { fos.close(); } catch ( IOException e ) { }
+    // File dir = new File( blue_dir );
+    // if ( ! dir.exists() ) {
+    //   if ( ! dir.mkdirs() ) {
+    //     blue_dir = SDCARD;
+    //     dir = new File( blue_dir );
+    //   }
+    // }
+    if ( ! mBlueDir.exists() ) {
+      Log.v( BlueApp.TAG, "failed dir " + blue_dir );
+      Toast.makeText( context, R.string.fail_blue_dir, Toast.LENGTH_LONG ).show();
+      return false;
     }
+    return true;
   }
 
-  private void importFile( String filename )
+  static boolean exportGame( Context context, BlueView view, String filename )
   {
+    
+    if ( ! checkBlueDir( context ) ) return false;
+    FileWriter fos = null;
+    try { 
+      File out = new File( mBlueDir, filename );
+      Log.v( BlueApp.TAG, "Export file: " + out.getAbsolutePath() );
+      fos = new FileWriter( out );
+      BlueStore.exportGame( fos, view );
+      // updateList();
+      Toast.makeText( context, R.string.ok_export, Toast.LENGTH_LONG ).show();
+    } catch ( FileNotFoundException e ) {
+      Log.v( BlueApp.TAG, "File not found " + e.getMessage() );
+      Toast.makeText( context, R.string.fail_export, Toast.LENGTH_LONG ).show();
+      return false;
+    } catch ( IOException e ) {
+      Log.v( BlueApp.TAG, "IO error " + e.getMessage() );
+    } finally {
+      if ( fos != null ) try { fos.close(); } catch ( IOException e ) { }
+    }
+    return true;
+  }
+
+
+  // static boolean exportFile( Context context, String filename )
+  // {
+  //   Log.v( BlueApp.TAG, "Export game file: \"" + filename + "\"" );
+  //   if ( ! checkBlueDir( context ) ) return false;
+  //   FileInputStream fis = null;
+  //   FileOutputStream fos = null;
+  //   try { 
+  //     fis = context.openFileInput( filename );
+  //     byte[] buffer = BlueStore.readGame( fis );
+  //     if ( buffer != null ) {
+  //       // Log.v( BlueApp.TAG, "buffer length " + buffer.length );
+  //       File out = new File( mBlueDir, filename );
+  //       fos = new FileOutputStream( out );
+  //       BlueStore.writeGame( fos, buffer );
+  //       // updateList();
+  //       Toast.makeText( context, R.string.ok_export, Toast.LENGTH_LONG ).show();
+  //     } else {
+  //       Log.v( BlueApp.TAG, "null game buffer");
+  //       Toast.makeText( context, R.string.fail_buffer, Toast.LENGTH_LONG ).show();
+  //       return false;
+  //     }
+  //   } catch ( FileNotFoundException e ) {
+  //     Log.v( BlueApp.TAG, "File not found " + e.getMessage() );
+  //     Toast.makeText( context, R.string.fail_export, Toast.LENGTH_LONG ).show();
+  //     return false;
+  //   } finally {
+  //     if ( fis != null ) try { fis.close(); } catch ( IOException e ) { }
+  //     if ( fos != null ) try { fos.close(); } catch ( IOException e ) { }
+  //   }
+  //   return true;
+  // }
+
+  private boolean importFile( Context context, String filename )
+  {
+    if ( ! checkBlueDir( context ) ) return false;
     FileInputStream fis = null;
     FileOutputStream fos = null;
     try { 
-      // Log.v("Blue", "import " + filename );
-      fis = new FileInputStream( BLUE_DIR + "/" + filename );
+      // Log.v( BlueApp.TAG, "import " + filename );
+      fis = new FileInputStream( new File( mBlueDir, filename ) );
       byte[] buffer = BlueStore.readGame( fis );
       if ( buffer != null ) {
-        // Log.v("Blue", "import buffer length " + buffer.length );
-        fos = mContext.openFileOutput( filename, Context.MODE_PRIVATE );
+        // Log.v( BlueApp.TAG, "import buffer length " + buffer.length );
+        fos = context.openFileOutput( filename, Context.MODE_PRIVATE );
         BlueStore.writeGame( fos, buffer );
         updateList();
       } else {
-        Log.v("Blue", "null game buffer");
+        Log.v( BlueApp.TAG, "null game buffer");
+        Toast.makeText( context, R.string.fail_import, Toast.LENGTH_LONG ).show();
+        return false;
       }
     } catch ( FileNotFoundException e ) {
-      // todo
+      Log.v( BlueApp.TAG, "fail import " + e.getMessage() );
+      Toast.makeText( context, R.string.fail_import, Toast.LENGTH_LONG ).show();
+      return false;
     } finally {
       if ( fis != null ) try { fis.close(); } catch ( IOException e ) { }
       if ( fos != null ) try { fos.close(); } catch ( IOException e ) { }
     }
+    return true;
   }
 
   @Override
@@ -259,7 +328,7 @@ class BlueFileDialog extends Dialog
     CharSequence item = ((TextView) view).getText();
     if ( item != null ) {
       if ( (ListView)parent == mListExt ) {
-        importFile( item.toString() );
+        importFile( mContext, item.toString() );
       } else {
         mCanSave  = false;
         mFilename = item.toString();

@@ -17,6 +17,7 @@ import java.io.BufferedReader;
 import java.io.FileOutputStream;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.io.BufferedWriter;
 import java.io.PrintWriter;
 import java.io.IOException;
 
@@ -35,7 +36,7 @@ class BlueStore
   static final char strategyChar[] = 
   { 'A', '2', '3', '4', '5', '6', '7', '8', '9', '1', 'J', 'Q', 'K' };
 
-  static final String strategySuit[] = { "H", "C", "D", "S" };
+  static final String strategySuit[] = { "H", "C", "D", "S", "h", "c", "d", "s" };
 
   static String strategyToString( int s ) 
   {
@@ -43,8 +44,11 @@ class BlueStore
     int suit = s / 13;
     int val  = s % 13;
     if ( val == 9 ) { // 10
+      if ( s > 7 ) return "10?";
       return "10" + strategySuit[suit];
     }
+    // Log.v( BlueApp.TAG, "strategy " + s + ": " + val + " " + suit );
+    if ( s > 7 ) return strategyChar[val] + "?";
     return strategyChar[val] + strategySuit[suit];
   }
 
@@ -69,7 +73,7 @@ class BlueStore
 
   static boolean writeGame( FileOutputStream fos, byte[] buffer )
   {
-    // Log.v("Blue", "write buffer size " + buffer.length );
+    // Log.v( BlueApp.TAG, "write buffer size " + buffer.length );
     try {
       fos.write( buffer, 0, buffer.length );
     } catch ( IOException e ) {
@@ -85,7 +89,7 @@ class BlueStore
       int t1 = fis.read();
       int t2 = fis.read();
       int tot = t1 | ( t2 << 8 );
-      // Log.v("Blue", "read buffer size " + tot + " " + t1 + " " + t2 );
+      // Log.v( BlueApp.TAG, "read buffer size " + tot + " " + t1 + " " + t2 );
       if ( t1 < 0 || t2 < 0 || tot <= 2 ) return null;
       buffer = new byte[ tot ];
       buffer[0] = (byte)t1;
@@ -104,21 +108,22 @@ class BlueStore
     return writeGame( fos, buffer );
   }
 
-  static boolean loadGame( FileInputStream fis, BlueView view, String filename )
+  static boolean loadGame( FileInputStream fis, BlueView view, String filename, boolean complete )
   {
     byte[] buffer = readGame( fis );
     if ( buffer == null ) return false;
-    view.restore( buffer, false, filename );
+    view.restore( buffer, complete, filename );
     return true;
   }
 
-  static boolean exportGame( FileOutputStream fos, BlueView view )
+  static boolean exportGame( FileWriter fos, BlueView view )
   {
     SimpleDateFormat sdf = new SimpleDateFormat( "yyyy.MM.dd", Locale.US );
     String date = sdf.format( new Date() );
-    // try {
+    try {
       // FileWriter fw = new FileWriter( fos );
-      PrintWriter pw = new PrintWriter( fos );
+      BufferedWriter bw = new BufferedWriter( fos );
+      PrintWriter pw = new PrintWriter( bw );
 
       pw.format("# Blue Game - %s\n", date );
       pw.format("#\n");
@@ -160,8 +165,12 @@ class BlueStore
       for ( BlueMove move: h ) {
         pw.format("%d %d 0\n", move.row1*14+move.col1, move.row2*14+move.col2 );
       }
-
-    // } catch ( IOException e ) { return false; }
+      bw.flush();
+      Log.v( BlueApp.TAG, "exported game view" );
+    } catch ( IOException e ) {
+      Log.v( BlueApp.TAG, "export game view: IO error " + e.getMessage() );
+      return false; 
+    }
     return true;
   }
 
@@ -170,9 +179,9 @@ class BlueStore
     String line = "";
     try {
       line = br.readLine().trim();
-      // Log.v("Blue", "LINE: " + line );
+      // Log.v( BlueApp.TAG, "LINE: " + line );
     } catch ( IOException e ) {
-      Log.v("Blue", "IOException " + e.toString() );
+      Log.v( BlueApp.TAG, "IOException " + e.toString() );
     }
     return line;
   }

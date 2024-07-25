@@ -28,12 +28,17 @@ class BlueInfoDialog extends Dialog
                      implements View.OnClickListener
 {
   private Button mBtnOK;
+  private Button mBtnExport;
   private Context mContext;
+  private BlueActivity mParent;
+  private BlueView mView;
 
-  BlueInfoDialog( Context context )
+  BlueInfoDialog( Context context, BlueActivity parent, BlueView view )
   {
     super( context );
     mContext = context;
+    mParent  = parent;
+    mView    = view;
   }
 
   @Override
@@ -44,8 +49,10 @@ class BlueInfoDialog extends Dialog
     setContentView(R.layout.blue_info_dialog);
     // getWindow().setLayout( LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT );
 
-    // mBtnOK = (Button) findViewById( R.id.btn_ok );
-    // mBtnOK.setOnClickListener( this );
+    mBtnOK     = (Button) findViewById( R.id.btn_ok );
+    mBtnExport = (Button) findViewById( R.id.btn_export );
+    mBtnOK.setOnClickListener( this );
+    mBtnExport.setOnClickListener( this );
 
     setTitle( R.string.game_over );
   }
@@ -53,6 +60,10 @@ class BlueInfoDialog extends Dialog
   @Override
   public void onClick( View v )
   {
+    if ( v.getId() == R.id.btn_ok ) {
+    } else if ( v.getId() == R.id.btn_export ) {
+      BlueFileDialog.exportGame( mContext, mView, Long.toString( mView.mSeed ) + ".txt" );
+    }
     dismiss();
   }
 

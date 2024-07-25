@@ -31,6 +31,9 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipEntry;
 // import java.util.zip.ZipFile;
 
+// import android.provider.Settings.System;
+import java.lang.System;
+
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
@@ -56,8 +59,7 @@ import android.content.ActivityNotFoundException;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 
-import android.provider.Settings.System;
-import android.provider.Settings.SettingNotFoundException;
+// import android.provider.Settings.SettingNotFoundException;
 
 import android.view.WindowManager;
 import android.view.Display;
@@ -71,6 +73,7 @@ import android.widget.Toast;
 public class BlueApp extends Application
                              implements OnSharedPreferenceChangeListener
 {
+  static final String TAG = "BLUE_GAME";
   static String VERSION = "00"; 
   static int VERSION_CODE;
   // static boolean mComplete = false;
@@ -83,6 +86,14 @@ public class BlueApp extends Application
   static String[] mGames;
 
   static String getCurrentGame() { return mGames[ (int)mAvailableGames ]; }
+  static String getLastGame()
+  { 
+    mAvailableGames = mGames.length - 1;
+    if ( mAvailableGames >= 0 ) {
+      return mGames[ (int)mAvailableGames ];
+    }
+    return null;
+  }
 
   // ----------------------------------------------------------------------
 
@@ -122,7 +133,7 @@ public class BlueApp extends Application
     // }
 
     int currentVersionCode = (int)( mPrefs.getLong( "VERSION", 0 ) );
-    // Log.v("Blue", "VERSION " + currentVersionCode + " " + VERSION_CODE );
+    // Log.v( BlueApp.TAG, "VERSION " + currentVersionCode + " " + VERSION_CODE );
 
     if ( VERSION_CODE > currentVersionCode ) {
       Editor editor = mPrefs.edit();
@@ -135,7 +146,7 @@ public class BlueApp extends Application
     mGamesNumber = mGames.length;
     mAvailableGames = mPrefs.getLong( "GAMES", 0L );
     mAvailableGames %= mGamesNumber;
-    Log.v("Blue", "GAMES " + mAvailableGames + " " + mGamesNumber );
+    Log.v( BlueApp.TAG, "GAMES " + mAvailableGames + " " + mGamesNumber );
   }
 
   
@@ -163,6 +174,22 @@ public class BlueApp extends Application
     editor.commit();
   }
 
+  void storeCurrentSeed( long seed )
+  {
+    Editor editor = mPrefs.edit();
+    editor.putLong( "SEED", seed );
+    editor.commit();
+  }
+
+  long retrieveCurrentSeed( )
+  {
+    long ret = mPrefs.getLong( "SEED", 0L );
+    if ( ret == 0L ) {
+      ret = System.nanoTime();
+    }
+    return ret;
+  }
+
   // -------------------------------------------------------------
   private int uncompressGames( InputStream fis )
   {
@@ -177,7 +204,7 @@ public class BlueApp extends Application
         String filepath = ze.getName();
         if ( ze.isDirectory() ) continue;
         // File file = new File( filepath );
-        // Log.v("Blue", "Uncompressing " + filepath );
+        // Log.v( BlueApp.TAG, "Uncompressing " + filepath );
         ++cnt;
         // FileOutputStream fout = new FileOutputStream( file );
         FileOutputStream fout = this.openFileOutput( filepath, Context.MODE_PRIVATE );
@@ -192,7 +219,7 @@ public class BlueApp extends Application
     } catch ( FileNotFoundException e ) {
     } catch ( IOException e ) {
     }
-    Log.v("Blue", "uncompressed " + cnt + " files " );
+    Log.v( BlueApp.TAG, "uncompressed " + cnt + " files " );
     return cnt;
   }
 

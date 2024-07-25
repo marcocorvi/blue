@@ -16,16 +16,28 @@
     android:text="@string/congrats"
   />
 
-
-  <!-- Button android:id="@+id/btn_ok"
+  <LinearLayout
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:layout_marginTop="20dp"
-    android:layout_marginBottom="20dp"
-    android:padding="15dp"
-    android:text="OK"
-    android:background="#990000ff"
-  / -->
-
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="10dp"
+    android:layout_marginTop="10dp"
+    android:layout_marginBottom="10dp"
+    >
+    <Button android:id="@+id/btn_export"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_weight="50"
+      android:text="@string/btn_export"
+      android:background="#990000ff"
+    />
+    <Button android:id="@+id/btn_ok"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_weight="50"
+      android:text="#string/btn_ok"
+      android:background="#990000ff"
+    />
+  </LinearLayout>
 
 </LinearLayout>

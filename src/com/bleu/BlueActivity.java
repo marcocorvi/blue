@@ -13,14 +13,19 @@ package com.marcocorvi.blue;
 
 import java.util.ArrayList;
 
+import java.io.FileOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+
+// import android.provider.Settings.System;
+import java.lang.System;
 
 import android.app.Activity;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.content.pm.ActivityInfo;
@@ -66,7 +71,7 @@ public class BlueActivity extends Activity
   public void onCreate(Bundle state )
   {
     super.onCreate(state );
-    // Log.v("Blue", "on create");
+    // Log.v( BlueApp.TAG, "on create");
 
     mApp = (BlueApp) getApplication();
     mApp.mActivity = this;
@@ -85,7 +90,7 @@ public class BlueActivity extends Activity
     int hh = dm.heightPixels;
     int ww = dm.widthPixels;
     int dpi = dm.densityDpi;
-    // Log.v("Blue", "metrics " + ww + " " + hh + " " + dpi );
+    // Log.v( BlueApp.TAG, "metrics " + ww + " " + hh + " " + dpi );
 
     mView.setSizes( ww, hh, dpi );
     // mView.init( );
@@ -95,19 +100,23 @@ public class BlueActivity extends Activity
     if ( state != null ) {
       restoreState( state );
     } else {
-      mView.reset();
+      // mView.resetSeed( System.nanoTime() );
       // setCurrentGame();
+      setLastGame();
     }
     setTheTitle();
   }
 
-  void setCurrentGame()
+  void setCurrentGame() { loadFileGame( mApp.getCurrentGame() ); }
+  void setLastGame()    { loadFileGame( mApp.getLastGame() ); }
+
+  private void loadFileGame( String filename )
   {
-    String filename = mApp.getCurrentGame();
+    Log.v( BlueApp.TAG, "load file game " + filename );
     FileInputStream fis = null;
     try { 
       fis = openFileInput( filename );
-      BlueStore.loadGame( fis, mView, filename );
+      BlueStore.loadGame( fis, mView, filename, true );
     } catch ( FileNotFoundException e ) {
       // todo
     } finally {
@@ -116,6 +125,7 @@ public class BlueActivity extends Activity
       }
     }
   }
+
 
   @Override
   protected void onSaveInstanceState( Bundle state )
@@ -127,10 +137,11 @@ public class BlueActivity extends Activity
   private void saveState( Bundle state )
   {
     byte[] ret = mView.getState();
-    // Log.v("Blue", "save state " + ret.length );
+    Log.v( BlueApp.TAG, "save state " + ret.length );
     if ( state == null ) return;
     state.putString( "BLUE_SEED", Long.toString( mView.mSeed ) );
     state.putByteArray( "BLUE_STATE", mView.getState() );
+    mApp.storeCurrentSeed( mView.mSeed );
   }
 
   @Override
@@ -143,14 +154,18 @@ public class BlueActivity extends Activity
 
   private void restoreState( Bundle state )
   {
-    // Log.v("Blue", "restore state");
     if ( state == null ) return;
     if ( mView == null ) return;
     String seed = state.getString( "BLUE_SEED" );
-    byte[] ret = state.getByteArray( "BLUE_STATE" );
-    if ( ret == null ) return;
-    // Log.v("Blue", "restore state " + ret.length );
-    mView.restore( ret, true, seed );
+    if ( seed != null ) {
+      byte[] ret = state.getByteArray( "BLUE_STATE" );
+      mView.restore( ret, true, seed );
+      Log.v( BlueApp.TAG, "restore state " + seed + " " + ret.length );
+    } else {
+      long lseed = mApp.retrieveCurrentSeed();
+      mView.resetSeed( lseed );
+      Log.v( BlueApp.TAG, "restart seed " + lseed );
+    }
   }
 
   private MenuItem mMIhelp;
@@ -227,7 +242,7 @@ public class BlueActivity extends Activity
       new DialogInterface.OnClickListener() {
         @Override
         public void onClick( DialogInterface dialog, int btn ) {
-          mView.reset();
+          mView.resetSeed( System.nanoTime() );
           setTheTitle();
         }
     } );
@@ -267,7 +282,7 @@ public class BlueActivity extends Activity
       new DialogInterface.OnClickListener() {
         @Override
         public void onClick( DialogInterface dialog, int btn ) {
-          mView.restart();
+          mView.restart( );
           setTheTitle();
         }
     } );
@@ -294,6 +309,11 @@ public class BlueActivity extends Activity
   private boolean checkMenu( int x, int y )
   {
     int action =  mView.toggleMenu( x, y );
+    return doAction( action );
+  }
+
+  boolean doAction( int action )
+  {
     switch ( action ) {
       case BlueView.ACTION_NONE: return false;
       case BlueView.ACTION_P_S: 
@@ -340,7 +360,7 @@ public class BlueActivity extends Activity
       if ( checkMenu( x, y ) ) return true;
       row2 = mView.getRow( x, y );
       col2 = mView.getColumn( x, y );
-      // Log.v("Blue", "Touch from " + row1 + "," + col1 + " to " + row2 + "," + col2 );
+      // Log.v( BlueApp.TAG, "Touch from " + row1 + "," + col1 + " to " + row2 + "," + col2 );
       if ( col1 >= 0 && col2 >= 0 && row1 >= 0 && row2 >= 0 ) {
         if ( mView.mMode == mView.MODE_STRATEGY ) {
           if ( col2 == 0 && col1 == 0 ) {
@@ -360,7 +380,7 @@ public class BlueActivity extends Activity
           if ( col1 > 0 && col2 > 0 ) {
             if ( mView.moveCard( col1, row1, col2, row2 ) ) { 
               if ( mView.isGameOver() ) {
-                (new BlueInfoDialog( this )).show();
+                (new BlueInfoDialog( this, this, mView )).show();
                 // mView.mMode = mView.MODE_OVER;
               }
               setTheTitle();
@@ -393,6 +413,21 @@ public class BlueActivity extends Activity
     super.onPause();
     // mData.save();
     if ( mView != null ) mView.pause();
+  }
+
+  private void saveFileGame()
+  {
+    String filename = Long.toString( mView.mSeed );
+    Log.v( BlueApp.TAG, "save file game " + filename );
+    FileOutputStream fos = null;
+    try {
+      fos = openFileOutput( filename, Context.MODE_PRIVATE );
+      BlueStore.saveGame( fos, mView );
+    } catch ( FileNotFoundException e ) {
+      // todo
+    } finally {
+      if ( fos != null ) try { fos.close(); } catch ( IOException e ) { }
+    }
   }
 
   @Override
@@ -433,24 +468,26 @@ public class BlueActivity extends Activity
     //   setTheTitle();
     // }
 
-    if ( doubleBack ) {
-      if ( doubleBackToast != null ) doubleBackToast.cancel();
-      doubleBackToast = null;
-      super.onBackPressed();
-      return;
-    }
-    doubleBack = true;
-    doubleBackToast = Toast.makeText( this, R.string.double_back, Toast.LENGTH_SHORT );
-    View view = doubleBackToast.getView();
-    if ( Build.VERSION.SDK_INT > Build.VERSION_CODES.O ) {
-      view.setBackgroundResource( R.drawable.toast_bg );
-    } else if ( Build.VERSION.SDK_INT < Build.VERSION_CODES.M ) {
-      view.setBackgroundColor( 0xff0033cc );
-    }
-    TextView tv = (TextView)view.findViewById( android.R.id.message );
-    tv.setTextColor( 0xffffffff );
-    doubleBackToast.show();
-    doubleBackHandler.postDelayed( doubleBackRunnable, 1000 );
+    // if ( doubleBack ) {
+    //   if ( doubleBackToast != null ) doubleBackToast.cancel();
+    //   doubleBackToast = null;
+    //   super.onBackPressed();
+    //   return;
+    // }
+    // doubleBack = true;
+    // doubleBackToast = Toast.makeText( this, R.string.double_back, Toast.LENGTH_SHORT );
+    // View view = doubleBackToast.getView();
+    // if ( Build.VERSION.SDK_INT > Build.VERSION_CODES.O ) {
+    //   view.setBackgroundResource( R.drawable.toast_bg );
+    // } else if ( Build.VERSION.SDK_INT < Build.VERSION_CODES.M ) {
+    //   view.setBackgroundColor( 0xff0033cc );
+    // }
+    // TextView tv = (TextView)view.findViewById( android.R.id.message );
+    // tv.setTextColor( 0xffffffff );
+    // doubleBackToast.show();
+    // doubleBackHandler.postDelayed( doubleBackRunnable, 1000 );
+
+    (new BlueMenuDialog( this, this )).show();
   }
 
   // @Override

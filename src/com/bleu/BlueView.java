@@ -403,7 +403,8 @@ public class BlueView extends SurfaceView
     makePaints();  // must come before makeCards()
     makeCards();
     makeBitmaps();
-    // shuffleCards( mLevel );
+    // long seed = System.nanoTime();
+    // shuffleCards( mLevel, seed );
     clearStrategy();
     mHolder = getHolder();
     mHolder.addCallback( this );
@@ -435,16 +436,18 @@ public class BlueView extends SurfaceView
     init();
   }
 
-  synchronized void reset()
+  synchronized void resetSeed( long seed )
   {
     clearStrategy();
-    shuffleCards( mLevel );
+    shuffleCards( mLevel, seed );
     mMode = MODE_DEFAULT;
     mHistory.clear();
     mHistoryPos = 0;
   }
 
-  synchronized void restart()
+  
+
+  synchronized void restart( )
   {
     if ( mMode == MODE_PLAY ) {
       for (int k=0; k<56; ++k ) {
@@ -560,7 +563,7 @@ public class BlueView extends SurfaceView
   void dumpBoard( int[] board )
   {
     for (int j=0; j<4; ++j ) {
-      Log.v("Blue",
+      Log.v( BlueApp.TAG,
         board[j+14+0] + " " +
         board[j+14+1] + " " +
         board[j+14+2] + " " +
@@ -578,9 +581,9 @@ public class BlueView extends SurfaceView
     }
   } 
 
-  synchronized void shuffleCards( int n ) 
+  synchronized private void shuffleCards( int n, long seed ) 
   {
-    mSeed = System.nanoTime();
+    mSeed = seed; 
     Random rand = new Random( mSeed );
 
     int cards[] = new int[52];
@@ -612,7 +615,7 @@ public class BlueView extends SurfaceView
     for ( n=0; n<56; ++n ) mStartBoard[n] = mBoard[n];
     // dumpBoard( mBoard );
   }
-  
+
   synchronized void swapAces( int row1, int row2 )
   {
     if ( mMode != MODE_STRATEGY ) return;
@@ -716,7 +719,7 @@ public class BlueView extends SurfaceView
   synchronized void goBackward( )
   {
     if ( mMode != MODE_PLAY ) return;
-    // Log.v("Blue", "go backward " + mHistoryPos + " " + mHistory.size() ); 
+    // Log.v( BlueApp.TAG, "go backward " + mHistoryPos + " " + mHistory.size() ); 
     if ( mHistoryPos > 0 ) {
       mHistoryPos --;
       BlueMove move = mHistory.get( mHistoryPos );
@@ -728,7 +731,7 @@ public class BlueView extends SurfaceView
   synchronized void goForward( )
   {
     if ( mMode != MODE_PLAY ) return;
-    // Log.v("Blue", "go forward " + mHistoryPos + " " + mHistory.size() ); 
+    // Log.v( BlueApp.TAG, "go forward " + mHistoryPos + " " + mHistory.size() ); 
     if ( mHistoryPos < mHistory.size() ) {
       BlueMove move = mHistory.get( mHistoryPos );
       mBoard[ move.row2 * 14 + move.col2 ] = mBoard[ move.row1 * 14 + move.col1 ];
@@ -801,13 +804,13 @@ public class BlueView extends SurfaceView
       super();
       holder = hld;
       done = false;
-      // Log.v("Blue", "Blue thread created");
+      // Log.v( BlueApp.TAG, "Blue thread created");
     }
 
     @Override
     public void run()
     {
-      // Log.v("Blue", "Blue thread run");
+      // Log.v( BlueApp.TAG, "Blue thread run");
       while ( ! done ) {
         Canvas canvas = holder.lockCanvas();
         if ( canvas == null ) {
@@ -819,7 +822,7 @@ public class BlueView extends SurfaceView
           holder.unlockCanvasAndPost( canvas );
         }
       }
-      // Log.v("Blue", "Blue thread done");
+      // Log.v( BlueApp.TAG, "Blue thread done");
     }
 
     public void doExit()
@@ -828,7 +831,7 @@ public class BlueView extends SurfaceView
       try {
         join();
       } catch ( InterruptedException e ) {
-        // Log.v("Blue", "thread doExit interrupted join");
+        // Log.v( BlueApp.TAG, "thread doExit interrupted join");
       }
     }
   }
@@ -840,7 +843,7 @@ public class BlueView extends SurfaceView
   // 240  320 120  50 21  (50+10)*4  21*14+2*13 = 294+26
   void setSizes( int ww, int hh, int dpi )
   {
-    // Log.v("Blue", "Set size " + ww + " " + hh );
+    // Log.v( BlueApp.TAG, "Set size " + ww + " " + hh );
     onWindowResize( ww, hh );
   }
 
@@ -863,7 +866,7 @@ public class BlueView extends SurfaceView
     mHMenuBtn = mXCard/2;
     mWMenu    = 4 * mXCard;
     mHMenu    = 2 * mXCard;
-    // Log.v("Blue", "Window resize Card " + mXCard + " " + mYCard + " Gap " + mXGap + " " + mYGap );
+    // Log.v( BlueApp.TAG, "Window resize Card " + mXCard + " " + mYCard + " Gap " + mXGap + " " + mYGap );
     makePaints();
     makeBitmaps();
   }
